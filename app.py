@@ -4,7 +4,7 @@ import os
 app = Flask(__name__)
 
 # Función para calcular la recomendación
-def calcular_recomendacion(nombre, nota1, nota2, nota3, nota4, nota5, nota6):
+def calcular_recomendacion(id, nombre, nota1, nota2, nota3, nota4, nota5, nota6):
   promedio = (nota1 * 0.15 + nota2 * 0.2 + nota3 * 0.15 + nota4 * 0.2 + nota5 * 0.1 + nota6 * 0.2)
   if promedio >= 4.5:
     recomendacion = "¡Excelente desempeño! Sigue así."
@@ -28,12 +28,13 @@ def calcular_recomendacion(nombre, nota1, nota2, nota3, nota4, nota5, nota6):
       recomendacion = "Esfuerzo mínimo. ¡Debes esforzarte mucho más!"
     
   return {
+    "idprediccion": id,
     "estudiante": nombre,
     "resultado": recomendacion
 }
 
-@app.route('/evaluar', methods=['POST'])
-def evaluar_estudiantes():
+@app.route('/evaluar/<int:id>', methods=['POST'])
+def evaluar_estudiantes(id):
   data = request.get_json()  # Obtener JSON del cuerpo de la solicitud
   
   # Validación para asegurarse de que la entrada es una lista
@@ -56,7 +57,7 @@ def evaluar_estudiantes():
       return jsonify({"error": f"Datos inválidos para el estudiante {estudiante.get('estudiante', 'desconocido')}"}), 400
     
     # Calcular recomendación y agregar a la lista
-    resultado = calcular_recomendacion(nombre, nota1, nota2, nota3, nota4, nota5, nota6)
+    resultado = calcular_recomendacion(id, nombre, nota1, nota2, nota3, nota4, nota5, nota6)
     resultados.append(resultado)
   
   return jsonify(resultados)  # Devolver la lista de resultados
