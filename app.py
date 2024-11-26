@@ -1,9 +1,19 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import os
 
-app = Flask(__name__)
+from flask import make_response
 
-# Función para calcular la recomendación
+app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "https://juanpamarquez.github.io/mpa-proyect/"}})
+
+@app.after_request
+def add_cors_headers(response):
+  response.headers['Access-Control-Allow-Origin'] = 'https://juanpamarquez.github.io/mpa-proyect/'
+  response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+  response.headers['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS'
+  return response
+
 def calcular_recomendacion(id, nombre, nota1, nota2, nota3, nota4, nota5, nota6):
   promedio = (nota1 * 0.15 + nota2 * 0.2 + nota3 * 0.15 + nota4 * 0.2 + nota5 * 0.1 + nota6 * 0.2)
   if promedio >= 4.5:
@@ -29,7 +39,7 @@ def calcular_recomendacion(id, nombre, nota1, nota2, nota3, nota4, nota5, nota6)
     
   return {
     "idprediccion": id,
-    "estudiante": nombre,
+    "nombre": nombre,
     "resultado": recomendacion
 }
 
@@ -46,7 +56,7 @@ def evaluar_estudiantes(id):
   # Iterar sobre cada estudiante en la lista
   for estudiante in data:
     try:
-      nombre = estudiante['estudiante']
+      nombre = estudiante['nombre']
       nota1 = float(estudiante['nota15c1'])
       nota2 = float(estudiante['nota20c1'])
       nota3 = float(estudiante['nota15c2'])
@@ -54,7 +64,7 @@ def evaluar_estudiantes(id):
       nota5 = float(estudiante['nota10c3'])
       nota6 = float(estudiante['nota20c3'])
     except (KeyError, ValueError):
-      return jsonify({"error": f"Datos inválidos para el estudiante {estudiante.get('estudiante', 'desconocido')}"}), 400
+      return jsonify({"error": f"Datos inválidos para el estudiante {estudiante.get('nombre', 'desconocido')}"}), 400
     
     # Calcular recomendación y agregar a la lista
     resultado = calcular_recomendacion(id, nombre, nota1, nota2, nota3, nota4, nota5, nota6)
