@@ -50,9 +50,10 @@ def evaluar_estudiantes(id):
             
       resultados.append({
         "idprediccion": id,
-        "estudiante": nombre,
+        "nombre": nombre,
         "resultado": recomendacion
       })
+
     except KeyError as e:
       return jsonify({"error": f"Falta la clave {str(e)} en el JSON del estudiante"}), 400
     except ValueError:
