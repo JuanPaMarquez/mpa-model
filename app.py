@@ -1,7 +1,8 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from mensajes import message
 import os
-
+import random
 from flask import make_response
 
 app = Flask(__name__)
@@ -13,35 +14,6 @@ def add_cors_headers(response):
   response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
   response.headers['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS'
   return response
-
-def calcular_recomendacion(id, nombre, nota1, nota2, nota3, nota4, nota5, nota6):
-  promedio = (nota1 * 0.15 + nota2 * 0.2 + nota3 * 0.15 + nota4 * 0.2 + nota5 * 0.1 + nota6 * 0.2)
-  if promedio >= 4.5:
-    recomendacion = "¡Excelente desempeño! Sigue así."
-  elif 4 <= promedio < 4.5:
-      recomendacion = "Muy buen trabajo, estás muy cerca de la excelencia."
-  elif 3.5 <= promedio < 4:
-      recomendacion = "Buen trabajo, pero puedes mejorar."
-  elif 3 <= promedio < 3.5:
-      recomendacion = "Buen esfuerzo, pero aún hay margen para mejorar."
-  elif 2.5 <= promedio < 3:
-      recomendacion = "Debes esforzarte más. ¡Tú puedes!"
-  elif 2 <= promedio < 2.5:
-      recomendacion = "Necesitas mejorar significativamente. ¡No te rindas!"
-  elif 1.5 <= promedio < 2:
-      recomendacion = "Esfuerzo insuficiente. ¡Puedes hacerlo mejor!"
-  elif 1 <= promedio < 1.5:
-      recomendacion = "Necesitas poner mucho más esfuerzo. ¡No te desanimes!"
-  elif 0.5 <= promedio < 1:
-      recomendacion = "Esfuerzo muy bajo. ¡Tienes que trabajar mucho más!"
-  else:
-      recomendacion = "Esfuerzo mínimo. ¡Debes esforzarte mucho más!"
-    
-  return {
-    "idprediccion": id,
-    "nombre": nombre,
-    "resultado": recomendacion
-}
 
 @app.route('/evaluar/<int:id>', methods=['POST'])
 def evaluar_estudiantes(id):
@@ -63,14 +35,30 @@ def evaluar_estudiantes(id):
       nota4 = float(estudiante['nota20c2'])
       nota5 = float(estudiante['nota10c3'])
       nota6 = float(estudiante['nota20c3'])
-    except (KeyError, ValueError):
-      return jsonify({"error": f"Datos inválidos para el estudiante {estudiante.get('nombre', 'desconocido')}"}), 400
-    
-    # Calcular recomendación y agregar a la lista
-    resultado = calcular_recomendacion(id, nombre, nota1, nota2, nota3, nota4, nota5, nota6)
-    resultados.append(resultado)
+      promedio = (nota1 * 0.15 + nota2 * 0.2 + nota3 * 0.15 + nota4 * 0.2 + nota5 * 0.1 + nota6 * 0.2)
+      if promedio < 2.0:
+          recomendacion = random.choice(message[1])  # Escoge un mensaje aleatorio de la categoría urgente
+      elif promedio < 3.0:
+          recomendacion = random.choice(message[2])  # Escoge un mensaje aleatorio de la categoría menor urgencia
+      elif promedio < 4.0:
+          recomendacion = random.choice(message[3])  # Escoge un mensaje aleatorio de la categoría normal
+      elif promedio < 4.5:
+          recomendacion = random.choice(message[4])  # Escoge un mensaje aleatorio de la categoría sugerencias
+      else:
+          recomendacion = random.choice(message[5])  # Escoge un mensaje aleatorio de la categoría ánimo
+
+            
+      resultados.append({
+        "idprediccion": id,
+        "estudiante": nombre,
+        "resultado": recomendacion
+      })
+    except KeyError as e:
+      return jsonify({"error": f"Falta la clave {str(e)} en el JSON del estudiante"}), 400
+    except ValueError:
+      return jsonify({"error": "Las notas deben ser valores numéricos"}), 400
   
-  return jsonify(resultados)  # Devolver la lista de resultados
+  return jsonify(resultados), 200  # Devolver la lista de resultados
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
