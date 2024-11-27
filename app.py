@@ -5,11 +5,11 @@ import os
 from flask import make_response
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "https://juanpamarquez.github.io/mpa-proyect/"}})
+CORS(app, resources={r"/*": {"origins": "https://juanpamarquez.github.io/"}})
 
 @app.after_request
 def add_cors_headers(response):
-  response.headers['Access-Control-Allow-Origin'] = 'https://juanpamarquez.github.io/mpa-proyect/'
+  response.headers['Access-Control-Allow-Origin'] = 'https://juanpamarquez.github.io/'
   response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
   response.headers['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS'
   return response
